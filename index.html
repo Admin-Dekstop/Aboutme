@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System_Reflection_Fandy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050505;
+            --text: #e0e0e0;
+            --accent: #ffffff;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* Background - Diperbaiki agar foto lebih kelihatan */
+        .hero-bg {
+            position: fixed;
+            inset: 0;
+            /* Latar belakang dibuat sedikit lebih terang agar foto terlihat jelas */
+            background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.85) 100%), 
+                        url('https://raw.githubusercontent.com/Admin-Dekstop/For_you/main/IMG20240906200708.jpg');
+            background-size: cover;
+            background-position: center;
+            z-index: -1;
+            /* Filter disesuaikan: Grayscale dikurangi dikit agar tidak terlalu 'mati', kontras dijaga */
+            filter: grayscale(0.8) contrast(1.1) brightness(0.9);
+            transition: transform 20s linear;
+        }
+
+        .hero-bg.active {
+            transform: scale(1.1);
+        }
+
+        /* Overlay Start */
+        #overlay {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 2s ease;
+        }
+
+        .btn-start {
+            background: none;
+            border: 1px solid #333;
+            color: #888;
+            padding: 12px 40px;
+            font-size: 10px;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.5s;
+        }
+
+        .btn-start:hover {
+            border-color: #fff;
+            color: #fff;
+            letter-spacing: 10px;
+        }
+
+        /* Scanline Effect - Dibuat lebih tipis agar tidak menghalangi foto */
+        .scanlines {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(to bottom, transparent 50%, rgba(255, 255, 255, 0.01) 51%);
+            background-size: 100% 4px;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 1.1em;
+            background: #fff;
+            margin-left: 5px;
+            animation: blink 1s steps(2) infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes blink {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .fade-in {
+            opacity: 0;
+            transition: opacity 3s ease;
+        }
+
+        .visible { opacity: 1; }
+
+        /* Audio Visualizer */
+        .wave-container {
+            position: fixed;
+            bottom: 40px;
+            left: 40px;
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            height: 20px;
+            opacity: 0.3;
+        }
+
+        .bar {
+            width: 2px;
+            background: #fff;
+            animation: wave-anim 1s infinite ease-in-out;
+        }
+
+        @keyframes wave-anim {
+            0%, 100% { height: 20%; }
+            50% { height: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="scanlines"></div>
+
+    <!-- Overlay Start -->
+    <div id="overlay">
+        <button class="btn-start" onclick="init()">Execute_Process</button>
+    </div>
+
+    <!-- Background Image -->
+    <div class="hero-bg" id="bg"></div>
+
+    <!-- Main View -->
+    <main class="h-screen flex items-center justify-center px-10">
+        <div class="max-w-2xl w-full">
+            
+            <div class="mono text-[10px] text-zinc-500 mb-6 tracking-[0.3em] uppercase" id="status-line">
+                System_Idle
+            </div>
+
+            <div class="min-h-[120px]">
+                <h1 id="text-main" class="text-xl md:text-2xl font-light leading-relaxed tracking-wide text-zinc-200"></h1>
+            </div>
+
+            <div id="final-block" class="fade-in mt-16 pt-8 border-t border-white/5">
+                <p class="mono text-[10px] text-zinc-600 mb-4 tracking-widest">ANALYSIS_RESULT:</p>
+                <p class="text-sm italic text-zinc-500 max-w-lg leading-loose">
+                    "Terkadang, 'effort' paling besar adalah saat kita tahu kapan harus berhenti menekan tombol refresh pada harapan yang sudah kadaluwarsa."
+                </p>
+                <div class="mt-10 flex items-center gap-4">
+                    <div class="h-[1px] w-8 bg-zinc-800"></div>
+                    <span class="text-[9px] tracking-[6px] text-zinc-600 uppercase">Fandy // Rebooting_Core</span>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Visualizer UI -->
+    <div class="wave-container" id="wave-ui" style="display: none;">
+        <div class="bar" style="animation-delay: 0.0s"></div>
+        <div class="bar" style="animation-delay: 0.2s"></div>
+        <div class="bar" style="animation-delay: 0.1s"></div>
+        <div class="bar" style="animation-delay: 0.3s"></div>
+        <span class="mono text-[8px] ml-2 tracking-tighter text-zinc-500">SYSTEM_AUDIO_ACTIVE</span>
+    </div>
+
+    <!-- Background Music dari GitHub Fandy -->
+    <audio id="audio-player" loop prefetch="auto">
+        <source src="https://raw.githubusercontent.com/Admin-Dekstop/For_you/main/sound.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        const logs = [
+            "LOG: INITIALIZING_MEMORY_SCAN...",
+            "LOG: PARSING_EFFORT_DATA...",
+            "LOG: COMPARING_EXPECTATION_VS_REALITY...",
+            "LOG: STATUS_CODE_403_FORBIDDEN...",
+            "LOG: DATA_DUMP_COMPLETE.",
+            "LOG: SYSTEM_READY_FOR_UPGRADE."
+        ];
+
+        const sentences = [
+            "Project semalam resmi diarsipkan.",
+            "Ratusan baris kode untuk sebuah jawaban yang sudah terprediksi.",
+            "Status: Dianggap teman. Tidak ada error, hanya tujuannya yang tidak merespon.",
+            "Menghapus cache perasaan yang tidak lagi efisien untuk dijalankan.",
+            "Tutup koneksinya sekarang, sebelum sistem utama mengalami crash.",
+            "Git reset --hard. Waktunya kembali ke versi diri yang lebih tangguh."
+        ];
+
+        let lineIdx = 0;
+        let charIdx = 0;
+        const mainText = document.getElementById('text-main');
+        const statusLine = document.getElementById('status-line');
+        const audio = document.getElementById('audio-player');
+
+        function init() {
+            document.getElementById('overlay').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('overlay').style.display = 'none';
+                document.getElementById('bg').classList.add('active');
+                document.getElementById('wave-ui').style.display = 'flex';
+                
+                // Audio start
+                audio.volume = 0;
+                audio.play();
+                let vol = 0;
+                let interval = setInterval(() => {
+                    if(vol < 0.5) {
+                        vol += 0.05;
+                        audio.volume = vol;
+                    } else {
+                        clearInterval(interval);
+                    }
+                }, 200);
+
+                type();
+            }, 1500);
+        }
+
+        function type() {
+            if (lineIdx < sentences.length) {
+                statusLine.innerText = logs[lineIdx];
+                let current = sentences[lineIdx];
+                
+                if (charIdx < current.length) {
+                    mainText.innerHTML = current.substring(0, charIdx + 1) + '<span class="cursor"></span>';
+                    charIdx++;
+                    setTimeout(type, 45);
+                } else {
+                    setTimeout(fadeOut, 2800);
+                }
+            } else {
+                statusLine.innerText = "SYSTEM_STATUS: STOIC_AND_STABLE.";
+                document.getElementById('final-block').classList.add('visible');
+            }
+        }
+
+        function fadeOut() {
+            mainText.style.transition = "opacity 1s";
+            mainText.style.opacity = "0";
+            setTimeout(() => {
+                lineIdx++;
+                charIdx = 0;
+                mainText.style.opacity = "1";
+                type();
+            }, 1200);
+        }
+    </script>
+</body>
+</html>
+
